@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { InventoryPage } from '../pages/inventoryPage';
+import { CartPage } from '../pages/cartPage';
+import { CheckOutPage } from '../pages/checkOutPage';
+import { LoginPage } from '../pages/loginPage';
 
 // Test for completing the checkout process from adding items to the cart to finalizing the order.
 // I think it's important to test the entire checkout flow as it can be critical part of the user experience on an e-commerce platform.
@@ -7,36 +10,23 @@ import { login } from './helpers';
 test.describe('Checkout test', () => {
     test('Complete checkout process', async ({page}) => {
         test.setTimeout(120000);
-        await login(page);
+        const login = new LoginPage(page);
+        await login.goto();
+        await login.login();
 
-        await page.waitForURL('https://www.saucedemo.com/inventory.html', { timeout: 10000 });
+        const inventory = new InventoryPage(page);
+        const cart = new CartPage(page);
+        const checkout = new CheckOutPage(page);
 
-        const addToCartBlackTshirt = page.locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]');
-        await addToCartBlackTshirt.click();
-        const addToCartRedTshirt = page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]');
-        await addToCartRedTshirt.click();
+        await expect(page).toHaveURL('/inventory.html');
 
-        const cart = page.locator('[data-test="shopping-cart-link"]');
-        await cart.click();
+        await inventory.addProductByTestId('add-to-cart-sauce-labs-bolt-t-shirt');
+        await inventory.addProductByTestId('add-to-cart-test.allthethings()-t-shirt-(red)');
+        await inventory.goToCart();
+        await cart.goToCheckout();
 
-        await page.waitForURL('https://www.saucedemo.com/cart.html', { timeout: 10000 });
-
-        const checkoutButton = page.getByRole('button', { name: 'Checkout' });
-        await checkoutButton.click();
-        await page.waitForURL('https://www.saucedemo.com/checkout-step-one.html', { timeout: 10000 });
-
-        await page.fill('[data-test="firstName"]', 'Matej');
-        await page.fill('[data-test="lastName"]', 'Tester');
-        await page.fill('[data-test="postalCode"]', '12345');
-        await page.click('[data-test="continue"]');
-
-        await page.waitForURL('https://www.saucedemo.com/checkout-step-two.html', { timeout: 10000 });
-
-        await expect(page).toHaveURL('https://www.saucedemo.com/checkout-step-two.html');
-
-        const finishButton = page.getByRole('button', { name: 'Finish' });
-        await finishButton.click();
-        await page.waitForURL('https://www.saucedemo.com/checkout-complete.html', { timeout: 10000 });
+        await checkout.fillCheckoutInformation('Matej', 'Tester', '12345');
+        await checkout.finishCheckout();
 
         await expect(page).toHaveURL('https://www.saucedemo.com/checkout-complete.html');
         await expect(page.getByText('Thank you for your order!')).toBeVisible();

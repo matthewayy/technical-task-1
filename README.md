@@ -1,4 +1,4 @@
-##Info
+npm##Info
 -Testy som sa rozhodol pisat pomocou Playwright+Typescript, kedze ma tento framework poslednu dobu dost bavi
 
 ##Obsah

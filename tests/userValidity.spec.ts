@@ -7,7 +7,7 @@ test.describe('Test for valid users', () => {
     for (const user of users) {
         test(`Check login validity for ${user.username}`, async ({ page }) => {
             test.setTimeout(120000);
-            await page.goto('https://www.saucedemo.com/');
+            await page.goto('/');
             await page.fill('#user-name', user.username);
             await page.fill('#password', 'secret_sauce');
             await page.click('#login-button');
